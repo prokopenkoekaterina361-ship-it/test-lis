@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Какая вы EdTech-лисица?</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #fdf6e3 0%, #f5e9d6 100%);
+            color: #5a3921;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(255, 250, 240, 0.95);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(90, 57, 33, 0.15);
+            margin: 20px auto;
+            border: 2px dashed #e0c9ac;
+        }
+        h1 { color: #d45d1f; text-align: center; margin-bottom: 10px; font-size: 2.8em; }
+        .subtitle { text-align: center; color: #8b7355; font-size: 1.2em; margin-bottom: 40px; }
+        #intro, #result { text-align: center; }
+        .question-container { display: none; margin-bottom: 30px; animation: fadeIn 0.8s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .question-title { font-size: 1.5em; color: #b85c14; margin-bottom: 25px; font-weight: 600; }
+        .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+        .option {
+            background: #fffaf0;
+            border: 2px solid #e8d4b9;
+            border-radius: 16px;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            align-items: flex-start;
+            text-align: left;
+        }
+        .option:hover { transform: translateY(-5px); border-color: #d45d1f; box-shadow: 0 10px 20px rgba(212, 93, 31, 0.15); background-color: #fff5e6; }
+        .option.selected { border-color: #d45d1f; background-color: #ffeedd; box-shadow: inset 0 0 0 2px #d45d1f; }
+        .option-emoji { font-size: 2.2em; margin-right: 18px; flex-shrink: 0; }
+        .option-text { font-size: 1.05em; line-height: 1.5; }
+        .button {
+            background: linear-gradient(to right, #e07b39, #d45d1f);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 18px 45px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 40px auto;
+            box-shadow: 0 6px 15px rgba(212, 93, 31, 0.3);
+        }
+        .button:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(212, 93, 31, 0.4); }
+        .button:disabled { background: #cccccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .result-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(90, 57, 33, 0.15);
+            border: 3px solid #e0c9ac;
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+        .result-icon { font-size: 5em; margin-bottom: 20px; }
+        .result-title { color: #d45d1f; font-size: 2.8em; margin-bottom: 15px; }
+        .result-subtitle { color: #8b7355; font-size: 1.3em; margin-bottom: 30px; font-style: italic; }
+        .result-description { font-size: 1.15em; line-height: 1.7; color: #5a3921; margin-bottom: 25px; text-align: left; }
+        .result-stats { display: flex; justify-content: space-around; flex-wrap: wrap; margin: 30px 0; }
+        .stat { padding: 15px; }
+        .stat-title { font-weight: bold; color: #b85c14; display: block; }
+        .result-image { width: 100%; max-width: 400px; border-radius: 20px; margin: 30px auto; border: 5px solid #f5e9d6; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: block; }
+        .share-button { background: #f0f0f0; border-radius: 50px; padding: 12px 30px; margin: 10px; display: inline-block; cursor: pointer; font-weight: bold; color: #5a3921; }
+        .restart-button { background: transparent; border: 2px solid #d45d1f; color: #d45d1f; }
+        .progress-bar { width: 100%; height: 10px; background: #e8d4b9; border-radius: 5px; margin: 25px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(to right, #e07b39, #d45d1f); width: 0%; transition: width 0.5s ease; }
+        .hidden { display: none; }
+        .credits { text-align: center; margin-top: 30px; color: #8b7355; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="intro">
+            <h1>🦊 Какая вы EdTech-лисица?</h1>
+            <p class="subtitle">Пройдите тест из 3 вопросов и узнайте, какой хитрой стратегией вы покоряете мир обучения!</p>
+            <button class="button" id="startButton">Начать тест!</button>
+        </div>
+
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+        <div id="questionsContainer">
+            <!-- Вопрос 1 -->
+            <div class="question-container" id="q1">
+                <div class="question-title">1. Когда перед вами стоит сложная задача по обучению, вы первым делом...</div>
+                <div class="options-grid">
+                    <div class="option" data-type="novator">
+                        <div class="option-emoji">🚀</div>
+                        <div class="option-text">Изучаю последние тренды и ищу новый, неочевидный инструмент или подход.</div>
+                    </div>
+                    <div class="option" data-type="nastavnik">
+                        <div class="option-emoji">🤝</div>
+                        <div class="option-text">Собираю команду, чтобы обсудить идеи и понять, в чём реальная потребность учеников.</div>
+                    </div>
+                    <div class="option" data-type="analitik">
+                        <div class="option-emoji">📊</div>
+                        <div class="option-text">Собираю данные, анализирую прошлый опыт и строю чёткий план по метрикам.</div>
+                    </div>
+                    <div class="option" data-type="integrator">
+                        <div class="option-emoji">🧩</div>
+                        <div class="option-text">Смотрю, как эта задача связана с другими процессами в компании, ищу точки интеграции.</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Вопрос 2 -->
+            <div class="question-container" id="q2">
+                <div class="question-title">2. Ваш идеальный результат работы над курсом — это...</div>
+                <div class="options-grid">
+                    <div class="option" data-type="novator">
+                        <div class="option-emoji">💡</div>
+                        <div class="option-text">«Вау! Такого ещё никто не делал». Ученики в восторге от нестандартного формата.</div>
+                    </div>
+                    <div class="option" data-type="nastavnik">
+                        <div class="option-emoji">😊</div>
+                        <div class="option-text">Ученики чувствуют поддержку и уверенность. Они написали тёплые благодарности.</div>
+                    </div>
+                    <div class="option" data-type="analitik">
+                        <div class="option-emoji">✅</div>
+                        <div class="option-text">Все KPI достигнуты. Результаты можно наглядно показать в отчёте руководству.</div>
+                    </div>
+                    <div class="option" data-type="integrator">
+                        <div class="option-emoji">⚙️</div>
+                        <div class="option-text">Курс органично встроился в рабочий поток и стал естественной частью жизни компании.</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Вопрос 3 -->
+            <div class="question-container" id="q3">
+                <div class="question-title">3. Что вы скорее скажете коллеге в споре об обучении?</div>
+                <div class="options-grid">
+                    <div class="option" data-type="novator">
+                        <div class="option-emoji">🔮</div>
+                        <div class="option-text">«Давайте рискнём и попробуем! Без экспериментов мы застрянем в прошлом.»</div>
+                    </div>
+                    <div class="option" data-type="nastavnik">
+                        <div class="option-emoji">❤️</div>
+                        <div class="option-text">«Главное — атмосфера. Если людям страшно или скучно, никакие технологии не помогут.»</div>
+                    </div>
+                    <div class="option" data-type="analitik">
+                        <div class="option-emoji">🎯</div>
+                        <div class="option-text">«А как мы это измерим? Без чётких критериев успеха это просто разговор ни о чём.»</div>
+                    </div>
+                    <div class="option" data-type="integrator">
+                        <div class="option-emoji">🌐</div>
+                        <div class="option-text">«А как это повлияет на смежные отделы? Мы не можем делать это в вакууме.»</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="button" id="nextButton" disabled>Следующий вопрос</button>
+        </div>
+
+        <div id="result" class="hidden">
+            <div class="result-card">
+                <!-- ИКОНКА РЕЗУЛЬТАТА (заменится JS) -->
+                <div class="result-icon" id="resultIcon">🦊</div>
+                <h2 class="result-title" id="resultTitle">Лис-Загадка</h2>
+                <p class="result-subtitle" id="resultSubtitle">Ваше описание появится здесь</p>
+
+                <!-- ИЗОБРАЖЕНИЕ РЕЗУЛЬТАТА (ССЫЛКИ УЖЕ ВСТАВЛЕНЫ) -->
+                <img src="" alt="Ваш тип лисицы" class="result-image" id="resultImage">
+
+                <p class="result-description" id="resultDescription">Описание вашего типа.</p>
+
+                <div class="result-stats">
+                    <div class="stat"><span class="stat-title">Ваша стихия:</span><br><span id="statElement">?</span></div>
+                    <div class="stat"><span class="stat-title">Любимый инструмент:</span><br><span id="statTool">?</span></div>
+                    <div class="stat"><span class="stat-title">Девиз:</span><br><span id="statMotto">?</span></div>
+                </div>
+
+                <p><strong>Поделитесь результатом:</strong></p>
+                <div>
+                    <div class="share-button" onclick="shareResult('VK')">ВКонтакте</div>
+                    <div class="share-button" onclick="shareResult('TG')">Telegram</div>
+                    <div class="share-button" onclick="shareResult('Twitter')">Twitter</div>
+                </div>
+                <button class="button restart-button" id="restartButton">Пройти тест снова</button>
+            </div>
+        </div>
+    </div>
+
+    <p class="credits">Тест «Какая вы EdTech-лисица?» | Создано с ❤️ для PROкурсы</p>
+
+    <script>
+        // ======================= КОНФИГУРАЦИЯ ТЕСТА =======================
+        const questions = document.querySelectorAll('.question-container');
+        const options = document.querySelectorAll('.option');
+        const nextButton = document.getElementById('nextButton');
+        const progressFill = document.getElementById('progressFill');
+        const startButton = document.getElementById('startButton');
+        const intro = document.getElementById('intro');
+        const questionsContainer = document.getElementById('questionsContainer');
+        const resultSection = document.getElementById('result');
+        const restartButton = document.getElementById('restartButton');
+
+        let currentQuestion = 0;
+        let answers = { novator: 0, nastavnik: 0, analitik: 0, integrator: 0 };
+
+        // ======================= ОПРЕДЕЛЕНИЕ РЕЗУЛЬТАТОВ С ИЗОБРАЖЕНИЯМИ =======================
+        const foxTypes = {
+            novator: {
+                title: "Лис-Новатор",
+                icon: "🚀",
+                subtitle: "Пионер и генератор идей",
+                description: "Вы — двигатель прогресса в обучении! Вас манит всё новое: свежие тренды, неиспробованные технологии, смелые форматы. Ваша энергия зажигает команды, а умение видеть будущее делает вас незаменимым, когда нужно выйти из рутины. Вы не боитесь экспериментов, ведь самый ценный урок — даже если что-то пошло не так.",
+                element: "Воздух новых идей",
+                tool: "Доска для мозгового штурма Miro, бета-версии AI-инструментов",
+                motto: "«Если не попробуешь, то так и не узнаешь»",
+                // ВАША ССЫЛКА НА ИЗОБРАЖЕНИЕ:
+                imageUrl: "https://i.ibb.co/d0t560D3/novator.png"
+            },
+            nastavnik: {
+                title: "Лис-Наставник",
+                icon: "🤝",
+                subtitle: "Сердце и опора команды",
+                description: "Ваша суперсила — эмпатия и поддержка. Вы чувствуете, чего на самом деле хотят и боятся ученики, и создаёте такую атмосферу, в которой хочется расти. Вы не просто даёте информацию, а вдохновляете, мотивируете и помогаете каждому раскрыть потенциал. Коллеги идут к вам за советом, а ученики — за уверенностью.",
+                element: "Тёплый чай и доверие",
+                tool: "Платформы для live-встреч, чаты поддержки, инструменты для обратной связи",
+                motto: "«Важен не курс, а человек, который его проходит»",
+                // ВАША ССЫЛКА НА ИЗОБРАЖЕНИЕ:
+                imageUrl: "https://i.ibb.co/HTVzQvhB/nastavnik.png"
+            },
+            analitik: {
+                title: "Лис-Аналитик",
+                icon: "📊",
+                subtitle: "Стратег и архитектор эффективности",
+                description: "Вы превращаете хаос в порядок, а данные — в ясные решения. Прежде чем сделать шаг, вы просчитываете риски, строите логичные схемы и определяете метрики успеха. Благодаря вам обучение перестаёт быть «творческим порывом» и становится управляемым процессом с измеримым результатом. Вы — гарантия того, что каждый ресурс потрачен не зря.",
+                element: "Крепкий фундамент данных",
+                tool: "Google Analytics, Tableau, системы LMS с детальной статистикой",
+                motto: "«Что нельзя измерить, тем нельзя управлять»",
+                // ВАША ССЫЛКА НА ИЗОБРАЖЕНИЕ:
+                imageUrl: "https://i.ibb.co/3PHPxxv/analitik.png"
+            },
+            integrator: {
+                title: "Лис-Интегратор",
+                icon: "🧩",
+                subtitle: "Мастер связей и экосистем",
+                description: "Вы видите картину целиком. Для вас обучение — не отдельный курс, а часть большой бизнес-системы. Вы мастерски связываете цели обучения с задачами отделов, встраиваете новые знания в рабочие процессы и находите общий язык между методистами, руководителями и IT. Вы — тот, кто заставляет всё работать слаженно, как часы.",
+                element: "Паутина рабочих процессов",
+                tool: "Системы типа Notion, Confluence, диаграммы связей Miro",
+                motto: "«Цель — не создать шедевр, а вписать его в интерьер компании»",
+                // ВАША ССЫЛКА НА ИЗОБРАЖЕНИЕ:
+                imageUrl: "https://i.ibb.co/sd1JJW91/integrator.png"
+            }
+        };
+
+        // ======================= ЛОГИКА ИНТЕРАКТИВА =======================
+        startButton.addEventListener('click', () => {
+            intro.style.display = 'none';
+            questionsContainer.style.display = 'block';
+            questions[currentQuestion].style.display = 'block';
+            updateProgress();
+        });
+
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                // Снимаем выделение со всех вариантов в текущем вопросе
+                const parent = this.closest('.question-container');
+                parent.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                // Выделяем выбранный
+                this.classList.add('selected');
+                nextButton.disabled = false;
+            });
+        });
+
+        nextButton.addEventListener('click', () => {
+            // Находим выбранный вариант в текущем вопросе
+            const selectedOption = questions[currentQuestion].querySelector('.option.selected');
+            if (selectedOption) {
+                const type = selectedOption.dataset.type;
+                answers[type]++;
+
+                // Переходим к следующему вопросу или показываем результат
+                questions[currentQuestion].style.display = 'none';
+                currentQuestion++;
+
+                if (currentQuestion < questions.length) {
+                    questions[currentQuestion].style.display = 'block';
+                    nextButton.disabled = true;
+                    updateProgress();
+                } else {
+                    showResult();
+                }
+            }
+        });
+
+        restartButton.addEventListener('click', () => {
+            // Сброс теста
+            resultSection.classList.add('hidden');
+            intro.style.display = 'block';
+            questionsContainer.style.display = 'none';
+            currentQuestion = 0;
+            answers = { novator: 0, nastavnik: 0, analitik: 0, integrator: 0 };
+            nextButton.disabled = true;
+            questions.forEach(q => q.style.display = 'none');
+            questions[0].querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            updateProgress();
+        });
+
+        // ======================= ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =======================
+        function updateProgress() {
+            const progress = ((currentQuestion) / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+
+        function showResult() {
+            questionsContainer.style.display = 'none';
+            resultSection.classList.remove('hidden');
+
+            // Определяем победивший тип
+            let maxScore = 0;
+            let winningType = 'novator';
+            for (const type in answers) {
+                if (answers[type] > maxScore) {
+                    maxScore = answers[type];
+                    winningType = type;
+                }
+            }
+
+            const result = foxTypes[winningType];
+
+            // Заполняем данные на странице результата
+            document.getElementById('resultIcon').textContent = result.icon;
+            document.getElementById('resultTitle').textContent = result.title;
+            document.getElementById('resultSubtitle').textContent = result.subtitle;
+            document.getElementById('resultDescription').textContent = result.description;
+            document.getElementById('statElement').textContent = result.element;
+            document.getElementById('statTool').textContent = result.tool;
+            document.getElementById('statMotto').textContent = result.motto;
+
+            // ВСТАВКА ИЗОБРАЖЕНИЯ ПО РЕЗУЛЬТАТУ
+            const resultImage = document.getElementById('resultImage');
+            resultImage.src = result.imageUrl;
+            resultImage.alt = `Иллюстрация: ${result.title}`;
+        }
+
+        // Упрощённая функция для кнопок "поделиться" (заглушка)
+        function shareResult(social) {
+            const resultTitle = document.getElementById('resultTitle').textContent;
+            const textToShare = `Я прошёл тест и я — ${resultTitle}! А какая ты EdTech-лисица?`;
+            const urlToShare = window.location.href;
+
+            let shareUrl = '';
+            switch(social) {
+                case 'VK':
+                    shareUrl = `https://vk.com/share.php?url=${encodeURIComponent(urlToShare)}&title=${encodeURIComponent(textToShare)}`;
+                    break;
+                case 'TG':
+                    shareUrl = `https://t.me/share/url?url=${encodeURIComponent(urlToShare)}&text=${encodeURIComponent(textToShare)}`;
+                    break;
+                case 'Twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}&url=${encodeURIComponent(urlToShare)}`;
+                    break;
+            }
+            window.open(shareUrl, '_blank', 'width=600,height=400');
+        }
+    </script>
+</body>
+</html>
